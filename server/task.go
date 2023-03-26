@@ -44,10 +44,10 @@ func startTask(keys []string, data any) {
 				innerWaiter <- struct{}{}
 			}()
 
-			code := requester.Request(innerKey, data)
+			code := requester.Request(innerKey, data, 5)
 			if code == 401 || code == 403 || code == 404 {
 				deletedWebhooks[innerKey] = struct{}{}
-			} else {
+			} else if code == 200 {
 				processed++
 			}
 		}(key, waiter)

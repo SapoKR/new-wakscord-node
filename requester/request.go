@@ -10,7 +10,7 @@ import (
 	"github.com/valyala/fastjson"
 )
 
-func Request(key string, data any) int {
+func Request(key string, data any, retry int) int {
 	req := fasthttp.AcquireRequest()
 
 	req.SetRequestURI(fmt.Sprintf("%s%s", baseURL, key))
@@ -29,7 +29,9 @@ func Request(key string, data any) int {
 			retryAfter := fastjson.GetFloat64(resp.Body(), "retry_after")
 			log.Printf("We are being rate limited. Webhook (%s) responded with 429. Retrying in %.2f seconds.", key[:35], retryAfter)
 			time.Sleep(time.Duration(float64(time.Second) * retryAfter))
-			return Request(key, data)
+			if retry != 0 {
+				return Request(key, data, retry-1)
+			}
 		}
 	}
 
