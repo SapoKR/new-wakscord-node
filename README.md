@@ -37,8 +37,8 @@ docker run -d -p 8777:3000 \
 각 환경변수의 설명은 다음과 같습니다
 
 -   KEY : 노드에 요청을 보내기 위한 API 키
--   HOST : aiohttp.web 서버를 열기 위한 호스트
--   PORT : aiohttp.web 서버를 열기 위한 지정 포트
+-   HOST : 서버를 열기 위한 호스트
+-   PORT : 서버를 열기 위한 지정 포트
 -   ID : 고유 노드 ID 값
 -   OWNER : 노드 소유자의 정보
 -   MAX_CONCURRENT : 동시에 전송가능한 웹훅 수
