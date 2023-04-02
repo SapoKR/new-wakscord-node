@@ -25,13 +25,16 @@ func Request(key string, data any, retry int) int {
 
 	err := client.Do(req, resp)
 	if err != nil {
-		if resp.StatusCode() == fasthttp.StatusTooManyRequests {
+		code := resp.StatusCode()
+		if code == fasthttp.StatusTooManyRequests {
 			retryAfter := fastjson.GetFloat64(resp.Body(), "retry_after")
 			log.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.", key[:35], retryAfter)
 			time.Sleep(time.Duration(float64(time.Second) * retryAfter))
 			if retry != 0 {
 				return Request(key, data, retry-1)
 			}
+		} else {
+			log.Printf("Uncaught error occurred. Status Code: %d and Detail: %v\n", code, err)
 		}
 	}
 
