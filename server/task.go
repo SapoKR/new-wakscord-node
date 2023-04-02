@@ -12,17 +12,21 @@ func addTask(keys []string, data any) {
 	chunks := utils.ChunkSlice(keys, env.GetInt("MAX_CONCURRENT", 500))
 
 	go func() {
+		status.Pending.Messages++
+		status.Pending.Total++
+
 		tasks <- task{
 			chunks: chunks,
 			data:   data,
 		}
+
+		status.Pending.Messages--
+		status.Pending.Messages--
 	}()
 }
 
 func chunkHandler(keys []string, data any) {
 	var codeChannel = make(chan int)
-	status.Pending.Tasks++
-	status.Pending.Total++
 
 	for _, key := range keys {
 		go func(key string, innerChannel chan int) {
@@ -41,22 +45,21 @@ func chunkHandler(keys []string, data any) {
 		<-codeChannel
 	}
 
-	status.Pending.Tasks--
-	status.Pending.Total--
 }
 
 func taskHandler() {
 	for {
 		task := <-tasks
-		status.Pending.Messages++
-		status.Pending.Total++
+
+		status.Pending.Tasks += len(task.chunks)
+		status.Pending.Total += len(task.chunks)
 
 		for _, chunk := range task.chunks {
 			chunkHandler(chunk, task.data)
 			time.Sleep(time.Second * time.Duration(env.GetInt("WAIT_CONCURRENT", 0)))
-		}
 
-		status.Pending.Messages--
-		status.Pending.Total--
+			status.Pending.Tasks--
+			status.Pending.Total--
+		}
 	}
 }
