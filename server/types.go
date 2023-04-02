@@ -2,36 +2,56 @@ package server
 
 import (
 	"time"
+
+	"github.com/wakscord/new-wakscord-node/env"
 )
 
 var (
-	processed int
+	status = nodeStatus{
+		Info: nodeInfo{
+			NodeID: env.GetInt("ID", 0),
+			Owner:  env.GetString("OWNER", "Unknown"),
+		},
+		Pending: nodePending{
+			Total:    0,
+			Messages: 0,
+			Tasks:    0,
+		},
+		Processed: 0,
+		Uptime:    0,
+	}
 
 	deletedWebhooks = map[string]struct{}{}
+	tasks           = make(chan task)
 
 	startTime = time.Now()
 )
 
-type NodeStatus struct {
-	Info      NodeInfo    `json:"info"`
-	Pending   NodePending `json:"pending"`
+type nodeStatus struct {
+	Info      nodeInfo    `json:"info"`
+	Pending   nodePending `json:"pending"`
 	Processed int         `json:"processed"`
 	Deleted   int         `json:"deleted"`
 	Uptime    int         `json:"uptime"`
 }
 
-type NodeInfo struct {
+type nodeInfo struct {
 	NodeID int    `json:"node_id"`
 	Owner  string `json:"owner"`
 }
 
-type NodePending struct {
+type nodePending struct {
 	Total    int `json:"total"`
 	Messages int `json:"messages"`
 	Tasks    int `json:"tasks"`
 }
 
-type RequestPayload struct {
+type requestPayload struct {
 	Keys []string `json:"keys"`
 	Data any      `json:"data"`
+}
+
+type task struct {
+	chunks [][]string
+	data   any
 }

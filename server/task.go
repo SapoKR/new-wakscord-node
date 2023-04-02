@@ -1,59 +1,62 @@
 package server
 
 import (
+	"time"
+
+	"github.com/wakscord/new-wakscord-node/discord"
 	"github.com/wakscord/new-wakscord-node/env"
-	"github.com/wakscord/new-wakscord-node/requester"
 	"github.com/wakscord/new-wakscord-node/utils"
 )
 
-func createTasks(keys []string, data any) {
-	var (
-		keysToRequest []string
-		waiter        = make(chan struct{})
-	)
+func addTask(keys []string, data any) {
+	chunks := utils.ChunkSlice(keys, env.GetInt("MAX_CONCURRENT", 500))
 
-	for _, key := range keys {
-		if _, ok := deletedWebhooks[key]; !ok {
-			keysToRequest = append(keysToRequest, key)
+	go func() {
+		tasks <- task{
+			chunks: chunks,
+			data:   data,
 		}
-	}
-
-	chunks := utils.ChunkSlice(keysToRequest, env.GetInt("MAX_CONCURRENT", 500))
-
-	for _, chunk := range chunks {
-		go func(innerKeys []string, innerWaiter chan struct{}) {
-			defer func() {
-				innerWaiter <- struct{}{}
-			}()
-
-			startTask(innerKeys, data)
-		}(chunk, waiter)
-	}
-
-	for range chunks {
-		<-waiter
-	}
+	}()
 }
 
-func startTask(keys []string, data any) {
-	waiter := make(chan struct{})
+func chunkHandler(keys []string, data any) {
+	var codeChannel = make(chan int)
+	status.Pending.Tasks++
+	status.Pending.Total++
 
 	for _, key := range keys {
-		go func(innerKey string, innerWaiter chan struct{}) {
-			defer func() {
-				innerWaiter <- struct{}{}
-			}()
-
-			code := requester.Request(innerKey, data, 5)
+		go func(key string, innerChannel chan int) {
+			code := discord.Request(key, data, 3)
 			if code == 401 || code == 403 || code == 404 {
-				deletedWebhooks[innerKey] = struct{}{}
-			} else if code == 200 {
-				processed++
+				deletedWebhooks[key] = struct{}{}
+			} else if code == 204 {
+				status.Processed++
 			}
-		}(key, waiter)
+
+			innerChannel <- code
+		}(key, codeChannel)
 	}
 
 	for range keys {
-		<-waiter
+		<-codeChannel
+	}
+
+	status.Pending.Tasks--
+	status.Pending.Total--
+}
+
+func taskHandler() {
+	for {
+		task := <-tasks
+		status.Pending.Messages++
+		status.Pending.Total++
+
+		for _, chunk := range task.chunks {
+			chunkHandler(chunk, task.data)
+			time.Sleep(time.Second * time.Duration(env.GetInt("WAIT_CONCURRENT", 0)))
+		}
+
+		status.Pending.Messages--
+		status.Pending.Total--
 	}
 }

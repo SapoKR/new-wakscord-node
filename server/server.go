@@ -25,5 +25,7 @@ func Run() error {
 
 	address := fmt.Sprintf("%s:%d", env.GetString("HOST", "0.0.0.0"), env.GetInt("PORT", 3000))
 
+	go taskHandler()
+
 	return app.Listen(address)
 }
