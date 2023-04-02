@@ -56,7 +56,7 @@ func taskHandler() {
 
 		for _, chunk := range task.chunks {
 			chunkHandler(chunk, task.data)
-			time.Sleep(time.Second * time.Duration(env.GetInt("WAIT_CONCURRENT", 0)))
+			time.Sleep(time.Second * time.Duration(env.GetInt("WAIT_CONCURRENT", 1)))
 
 			status.Pending.Tasks--
 			status.Pending.Total--
