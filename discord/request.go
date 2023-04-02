@@ -72,7 +72,7 @@ func RequestHTTP(key string, data any, retry int) int {
 				return RequestHTTP(key, data, retry-1)
 			}
 		} else {
-			fmt.Printf("Uncaught error occurred. Status Code: %d, Error: %s and Body: %s\n", code, err.Error(), string(respBody))
+			fmt.Printf("Uncaught error occurred. Status Code: %d and Body: %s\n", code, string(respBody))
 		}
 	}
 
