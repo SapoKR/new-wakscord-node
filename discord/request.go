@@ -28,7 +28,7 @@ func Request(key string, data any, retry int) int {
 		code := resp.StatusCode()
 		if code == fasthttp.StatusTooManyRequests {
 			retryAfter := fastjson.GetFloat64(resp.Body(), "retry_after")
-			log.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.", key[:35], retryAfter)
+			log.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
 			time.Sleep(time.Duration(float64(time.Second) * retryAfter))
 			if retry != 0 {
 				return Request(key, data, retry-1)
