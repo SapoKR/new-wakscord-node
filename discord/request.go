@@ -63,7 +63,7 @@ func RequestHTTP(key string, data any, retry int) int {
 
 	code := resp.StatusCode
 	respBody, _ := io.ReadAll(resp.Body)
-	if code >= 400 {
+	if code >= 400 && code != http.StatusNotFound {
 		if code == http.StatusTooManyRequests {
 			retryAfter := fastjson.GetFloat64(respBody, "retry_after")
 			fmt.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
