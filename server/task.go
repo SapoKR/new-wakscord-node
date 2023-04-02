@@ -21,7 +21,7 @@ func addTask(keys []string, data any) {
 		}
 
 		status.Pending.Messages--
-		status.Pending.Messages--
+		status.Pending.Total--
 	}()
 }
 
