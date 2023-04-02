@@ -8,7 +8,9 @@ import (
 )
 
 func Run() error {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		AppName: "Wakscord Node",
+	})
 	key := fmt.Sprintf("Bearer %s", env.GetString("KEY", "wakscord"))
 
 	app.Get("/", index)
