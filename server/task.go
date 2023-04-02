@@ -26,18 +26,18 @@ func addTask(keys []string, data any) {
 }
 
 func chunkHandler(keys []string, data any) {
-	var codeChannel = make(chan int)
+	var codeChannel = make(chan struct{})
 
 	for _, key := range keys {
-		go func(key string, innerChannel chan int) {
-			code := discord.Request(key, data, 3)
+		go func(key string, innerChannel chan struct{}) {
+			code := discord.RequestHTTP(key, data, 3)
 			if code == 401 || code == 403 || code == 404 {
 				deletedWebhooks[key] = struct{}{}
 			} else if code == 204 {
 				status.Processed++
 			}
 
-			innerChannel <- code
+			innerChannel <- struct{}{}
 		}(key, codeChannel)
 	}
 
