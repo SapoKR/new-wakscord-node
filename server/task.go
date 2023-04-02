@@ -57,9 +57,9 @@ func taskHandler() {
 
 			status.Pending.Tasks--
 			status.Pending.Total--
-
-			status.Pending.Messages--
-			status.Pending.Total--
 		}
+
+		status.Pending.Messages--
+		status.Pending.Total--
 	}
 }
