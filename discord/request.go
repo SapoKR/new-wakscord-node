@@ -25,7 +25,7 @@ func RequestFastHTTP(key string, data any, retry int) int {
 
 	resp := fasthttp.AcquireResponse()
 
-	fasthttpClient.Do(req, resp)
+	err := fasthttpClient.Do(req, resp)
 	code := resp.StatusCode()
 	if code != fasthttp.StatusNoContent {
 		if code == fasthttp.StatusTooManyRequests {
@@ -36,7 +36,7 @@ func RequestFastHTTP(key string, data any, retry int) int {
 				return RequestFastHTTP(key, data, retry-1)
 			}
 		} else {
-			fmt.Printf("Uncaught error occurred. Status Code: %d and Body: %s\n", code, resp.Body())
+			fmt.Printf("Uncaught error occurred. Status Code %d, Error: %s and Body: %s\n", code, err.Error(), resp.Body())
 		}
 	}
 
@@ -54,7 +54,10 @@ func RequestHTTP(key string, data any, retry int) int {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, _ := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
 	code := resp.StatusCode
 	respBody, _ := io.ReadAll(resp.Body)
 	if code != http.StatusNoContent {
