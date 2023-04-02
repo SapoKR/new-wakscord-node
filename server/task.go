@@ -19,9 +19,6 @@ func addTask(keys []string, data any) {
 			chunks: chunks,
 			data:   data,
 		}
-
-		status.Pending.Messages--
-		status.Pending.Total--
 	}()
 }
 
@@ -59,6 +56,9 @@ func taskHandler() {
 			time.Sleep(time.Second * time.Duration(env.GetInt("WAIT_CONCURRENT", 1)))
 
 			status.Pending.Tasks--
+			status.Pending.Total--
+
+			status.Pending.Messages--
 			status.Pending.Total--
 		}
 	}

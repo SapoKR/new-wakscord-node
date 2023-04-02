@@ -8,43 +8,43 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/valyala/fasthttp"
+	// "github.com/valyala/fasthttp"
 	"github.com/valyala/fastjson"
 )
 
-func RequestFastHTTP(key string, data any, retry int) int {
-	req := fasthttp.AcquireRequest()
+// func RequestFastHTTP(key string, data any, retry int) int {
+// 	req := fasthttp.AcquireRequest()
 
-	req.SetRequestURI(fmt.Sprintf("%s%s", baseURL, key))
+// 	req.SetRequestURI(fmt.Sprintf("%s%s", baseURL, key))
 
-	req.Header.SetMethod(fasthttp.MethodPost)
-	req.Header.SetContentType("application/json")
+// 	req.Header.SetMethod(fasthttp.MethodPost)
+// 	req.Header.SetContentType("application/json")
 
-	body, _ := json.Marshal(data)
-	req.SetBody(body)
+// 	body, _ := json.Marshal(data)
+// 	req.SetBody(body)
 
-	resp := fasthttp.AcquireResponse()
+// 	resp := fasthttp.AcquireResponse()
 
-	err := fasthttpClient.Do(req, resp)
-	code := resp.StatusCode()
-	if code != fasthttp.StatusNoContent {
-		if code == fasthttp.StatusTooManyRequests {
-			retryAfter := fastjson.GetFloat64(resp.Body(), "retry_after")
-			fmt.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
-			time.Sleep(time.Duration(float64(time.Second) * retryAfter))
-			if retry != 0 {
-				return RequestFastHTTP(key, data, retry-1)
-			}
-		} else {
-			fmt.Printf("Uncaught error occurred. Status Code %d, Error: %s and Body: %s\n", code, err.Error(), resp.Body())
-		}
-	}
+// 	err := fasthttpClient.Do(req, resp)
+// 	code := resp.StatusCode()
+// 	if code != fasthttp.StatusNoContent {
+// 		if code == fasthttp.StatusTooManyRequests {
+// 			retryAfter := fastjson.GetFloat64(resp.Body(), "retry_after")
+// 			fmt.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
+// 			time.Sleep(time.Duration(float64(time.Second) * retryAfter))
+// 			if retry != 0 {
+// 				return RequestFastHTTP(key, data, retry-1)
+// 			}
+// 		} else {
+// 			fmt.Printf("Uncaught error occurred. Status Code %d, Error: %s and Body: %s\n", code, err.Error(), resp.Body())
+// 		}
+// 	}
 
-	fasthttp.ReleaseRequest(req)
-	defer fasthttp.ReleaseResponse(resp)
+// 	fasthttp.ReleaseRequest(req)
+// 	defer fasthttp.ReleaseResponse(resp)
 
-	return resp.StatusCode()
-}
+// 	return resp.StatusCode()
+// }
 
 func RequestHTTP(key string, data any, retry int) int {
 	body, _ := json.Marshal(data)
@@ -56,7 +56,7 @@ func RequestHTTP(key string, data any, retry int) int {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		fmt.Printf("Uncaught error occurred. Error: %s", err.Error())
 	}
 	code := resp.StatusCode
 	respBody, _ := io.ReadAll(resp.Body)
