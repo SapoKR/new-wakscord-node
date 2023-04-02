@@ -57,10 +57,13 @@ func RequestHTTP(key string, data any, retry int) int {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		fmt.Printf("Uncaught error occurred. Error: %s", err.Error())
+		return 0
 	}
+	defer resp.Body.Close()
+
 	code := resp.StatusCode
 	respBody, _ := io.ReadAll(resp.Body)
-	if code != http.StatusNoContent {
+	if code >= 400 {
 		if code == http.StatusTooManyRequests {
 			retryAfter := fastjson.GetFloat64(respBody, "retry_after")
 			fmt.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
@@ -72,7 +75,6 @@ func RequestHTTP(key string, data any, retry int) int {
 			fmt.Printf("Uncaught error occurred. Status Code: %d, Error: %s and Body: %s\n", code, err.Error(), string(respBody))
 		}
 	}
-	defer resp.Body.Close()
 
 	return resp.StatusCode
 }
