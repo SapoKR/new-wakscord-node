@@ -2,7 +2,7 @@ name: Build Docker Image
 on: [push, pull_request]
 
 jobs:
-  build-and-push-image:
+  build-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
