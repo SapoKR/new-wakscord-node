@@ -6,7 +6,9 @@ COPY . .
 
 RUN go build -o app
 
-FROM scratch
+FROM alpine:3.17.3
+
+RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/app .
 
