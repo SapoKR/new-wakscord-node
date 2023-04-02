@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -26,18 +25,18 @@ func RequestFastHTTP(key string, data any, retry int) int {
 
 	resp := fasthttp.AcquireResponse()
 
-	err := fasthttpClient.Do(req, resp)
-	if err != nil {
-		code := resp.StatusCode()
+	fasthttpClient.Do(req, resp)
+	code := resp.StatusCode()
+	if code != fasthttp.StatusNoContent {
 		if code == fasthttp.StatusTooManyRequests {
 			retryAfter := fastjson.GetFloat64(resp.Body(), "retry_after")
-			log.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
+			fmt.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
 			time.Sleep(time.Duration(float64(time.Second) * retryAfter))
 			if retry != 0 {
 				return RequestFastHTTP(key, data, retry-1)
 			}
 		} else {
-			log.Printf("Uncaught error occurred. Status Code: %d and Detail: %v\n", code, err)
+			fmt.Printf("Uncaught error occurred. Status Code: %d and Body: %s\n", code, resp.Body())
 		}
 	}
 
@@ -49,23 +48,25 @@ func RequestFastHTTP(key string, data any, retry int) int {
 
 func RequestHTTP(key string, data any, retry int) int {
 	body, _ := json.Marshal(data)
+	bodyReader := bytes.NewReader(body)
 
-	req, _ := http.NewRequest(http.MethodPost, baseURL+key, bytes.NewReader(body))
+	req, _ := http.NewRequest(http.MethodPost, baseURL+key, bodyReader)
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		code := resp.StatusCode
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, _ := http.DefaultClient.Do(req)
+	code := resp.StatusCode
+	respBody, _ := io.ReadAll(resp.Body)
+	if code != http.StatusNoContent {
 		if code == http.StatusTooManyRequests {
-			respBody, _ := io.ReadAll(resp.Body)
-
 			retryAfter := fastjson.GetFloat64(respBody, "retry_after")
-			log.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
+			fmt.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
 			time.Sleep(time.Duration(float64(time.Second) * retryAfter))
 			if retry != 0 {
 				return RequestHTTP(key, data, retry-1)
 			}
 		} else {
-			log.Printf("Uncaught error occurred. Status Code: %d and Detail: %v\n", code, err)
+			fmt.Printf("Uncaught error occurred. Status Code: %d and Body: %s\n", code, string(respBody))
 		}
 	}
 	defer resp.Body.Close()
