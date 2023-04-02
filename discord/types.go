@@ -1,4 +1,4 @@
-package requester
+package discord
 
 import "github.com/valyala/fasthttp"
 
