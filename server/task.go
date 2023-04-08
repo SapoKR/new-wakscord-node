@@ -1,6 +1,8 @@
 package server
 
 import (
+	"log"
+	"sync/atomic"
 	"time"
 
 	"github.com/wakscord/new-wakscord-node/discord"
@@ -9,11 +11,19 @@ import (
 )
 
 func addTask(keys []string, data any) {
-	chunks := utils.ChunkSlice(keys, env.GetInt("MAX_CONCURRENT", 500))
+	var notDeletedKeys []string
+
+	for _, key := range keys {
+		if _, ok := deletedWebhooks[key]; !ok {
+			notDeletedKeys = append(notDeletedKeys, key)
+		}
+	}
+
+	chunks := utils.ChunkSlice(notDeletedKeys, env.GetInt("MAX_CONCURRENT", 500))
 
 	go func() {
-		status.Pending.Messages++
-		status.Pending.Total++
+		atomic.AddInt64(&status.Pending.Messages, 1)
+		atomic.AddInt64(&status.Pending.Total, 1)
 
 		tasks <- task{
 			chunks: chunks,
@@ -23,43 +33,47 @@ func addTask(keys []string, data any) {
 }
 
 func chunkHandler(keys []string, data any) {
-	var codeChannel = make(chan struct{})
+	var responseChannel = make(chan discord.Response)
 
 	for _, key := range keys {
-		go func(key string, innerChannel chan struct{}) {
-			code := discord.RequestHTTP(key, data, 3)
-			if code == 401 || code == 403 || code == 404 {
-				deletedWebhooks[key] = struct{}{}
-			} else if code == 204 {
-				status.Processed++
-			}
+		go func(key string, innerChannel chan discord.Response) {
+			response := discord.RequestFastHTTP(key, data, 3)
 
-			innerChannel <- struct{}{}
-		}(key, codeChannel)
+			innerChannel <- response
+		}(key, responseChannel)
 	}
 
 	for range keys {
-		<-codeChannel
+		response := <-responseChannel
+		if response.Error != nil {
+			log.Printf("Uncaught error occurred. Error: %v", response.Error)
+		}
+		if 401 <= response.Code && response.Code <= 404 {
+			deletedWebhooks[response.Key] = struct{}{}
+		} else if response.Code != 204 {
+			log.Printf("Discord returned uncaught status code. Status Code: %d and Body: %s\n", response.Code, response.Body)
+		} else {
+			atomic.AddInt64(&status.Processed, 1)
+		}
 	}
-
 }
 
 func taskHandler() {
 	for {
 		task := <-tasks
 
-		status.Pending.Tasks += len(task.chunks)
-		status.Pending.Total += len(task.chunks)
+		atomic.AddInt64(&status.Pending.Tasks, int64(len(task.chunks)))
+		atomic.AddInt64(&status.Pending.Total, int64(len(task.chunks)))
 
 		for _, chunk := range task.chunks {
 			chunkHandler(chunk, task.data)
 			time.Sleep(time.Second * time.Duration(env.GetInt("WAIT_CONCURRENT", 1)))
 
-			status.Pending.Tasks--
-			status.Pending.Total--
+			atomic.AddInt64(&status.Pending.Tasks, -1)
+			atomic.AddInt64(&status.Pending.Total, -1)
 		}
 
-		status.Pending.Messages--
-		status.Pending.Total--
+		atomic.AddInt64(&status.Pending.Messages, -1)
+		atomic.AddInt64(&status.Pending.Total, -1)
 	}
 }
