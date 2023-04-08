@@ -62,18 +62,18 @@ func taskHandler() {
 	for {
 		task := <-tasks
 
-		atomic.AddInt64(&status.Pending.Tasks, int64(len(task.chunks)))
-		atomic.AddInt64(&status.Pending.Total, int64(len(task.chunks)))
+		status.Pending.Tasks += int64(len(task.chunks))
+		status.Pending.Total += int64(len(task.chunks))
 
 		for _, chunk := range task.chunks {
 			chunkHandler(chunk, task.data)
 			time.Sleep(time.Second * time.Duration(env.GetInt("WAIT_CONCURRENT", 1)))
 
-			atomic.AddInt64(&status.Pending.Tasks, -1)
-			atomic.AddInt64(&status.Pending.Total, -1)
+			status.Pending.Tasks--
+			status.Pending.Total--
 		}
 
-		atomic.AddInt64(&status.Pending.Messages, -1)
-		atomic.AddInt64(&status.Pending.Total, -1)
+		status.Pending.Messages--
+		status.Pending.Total--
 	}
 }
