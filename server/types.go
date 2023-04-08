@@ -30,7 +30,7 @@ var (
 type nodeStatus struct {
 	Info      nodeInfo    `json:"info"`
 	Pending   nodePending `json:"pending"`
-	Processed int64       `json:"processed"`
+	Processed int32       `json:"processed"`
 	Deleted   int         `json:"deleted"`
 	Uptime    int         `json:"uptime"`
 }
@@ -41,9 +41,9 @@ type nodeInfo struct {
 }
 
 type nodePending struct {
-	Total    int64 `json:"total"`
-	Messages int64 `json:"messages"`
-	Tasks    int64 `json:"tasks"`
+	Total    int32 `json:"total"`
+	Messages int32 `json:"messages"`
+	Tasks    int32 `json:"tasks"`
 }
 
 type requestPayload struct {

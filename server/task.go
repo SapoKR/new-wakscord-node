@@ -22,8 +22,8 @@ func addTask(keys []string, data any) {
 	chunks := utils.ChunkSlice(notDeletedKeys, env.GetInt("MAX_CONCURRENT", 500))
 
 	go func() {
-		atomic.AddInt64(&status.Pending.Messages, 1)
-		atomic.AddInt64(&status.Pending.Total, 1)
+		atomic.AddInt32(&status.Pending.Messages, 1)
+		atomic.AddInt32(&status.Pending.Total, 1)
 
 		tasks <- task{
 			chunks: chunks,
@@ -53,7 +53,7 @@ func chunkHandler(keys []string, data any) {
 		} else if response.Code != 204 {
 			log.Printf("Discord returned uncaught status code. Status Code: %d and Body: %s\n", response.Code, response.Body)
 		} else {
-			atomic.AddInt64(&status.Processed, 1)
+			status.Processed++
 		}
 	}
 }
@@ -62,8 +62,8 @@ func taskHandler() {
 	for {
 		task := <-tasks
 
-		status.Pending.Tasks += int64(len(task.chunks))
-		status.Pending.Total += int64(len(task.chunks))
+		status.Pending.Tasks += int32(len(task.chunks))
+		status.Pending.Total += int32(len(task.chunks))
 
 		for _, chunk := range task.chunks {
 			chunkHandler(chunk, task.data)
