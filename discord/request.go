@@ -4,6 +4,7 @@ import (
 	// "bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	// "io"
 	// "net/http"
@@ -37,7 +38,7 @@ func RequestFastHTTP(key string, data any, retry int) Response {
 	code := resp.StatusCode()
 	if code == fasthttp.StatusTooManyRequests {
 		retryAfter := fastjson.GetFloat64(resp.Body(), "retry_after")
-		fmt.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
+		log.Printf("Webhook (%s) is being rate limited. Retrying in %.2f seconds.\n", key[:35], retryAfter)
 		time.Sleep(time.Duration(float64(time.Second) * retryAfter))
 		if retry != 0 {
 			return RequestFastHTTP(key, data, retry-1)
