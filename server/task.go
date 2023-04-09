@@ -56,12 +56,15 @@ func chunkHandler(keys []string, data any) {
 			status.Processed++
 		}
 	}
+
+	close(responseChannel)
 }
 
 func taskHandler() {
+	log.Println("Task handler started")
+
 	for {
 		task := <-tasks
-
 		status.Pending.Tasks += int32(len(task.chunks))
 		status.Pending.Total += int32(len(task.chunks))
 
