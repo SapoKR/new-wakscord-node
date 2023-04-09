@@ -1,6 +1,7 @@
 package server
 
 import (
+	"runtime"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,6 +11,7 @@ import (
 func index(ctx *fiber.Ctx) error {
 	status.Deleted = len(deletedWebhooks)
 	status.Uptime = int(time.Since(startTime).Seconds())
+	status.Goroutines = runtime.NumGoroutine()
 	return ctx.JSON(status)
 }
 

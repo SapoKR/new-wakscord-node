@@ -28,11 +28,12 @@ var (
 )
 
 type nodeStatus struct {
-	Info      nodeInfo    `json:"info"`
-	Pending   nodePending `json:"pending"`
-	Processed int32       `json:"processed"`
-	Deleted   int         `json:"deleted"`
-	Uptime    int         `json:"uptime"`
+	Info       nodeInfo    `json:"info"`
+	Pending    nodePending `json:"pending"`
+	Processed  int32       `json:"processed"`
+	Deleted    int         `json:"deleted"`
+	Uptime     int         `json:"uptime"`
+	Goroutines int         `json:"goroutines"`
 }
 
 type nodeInfo struct {
