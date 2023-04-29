@@ -27,7 +27,7 @@ func RequestFastHTTP(key string, data any, retry int) Response {
 
 	resp := fasthttp.AcquireResponse()
 
-	err := fasthttpClient.Do(req, resp)
+	err := fasthttpClient.DoTimeout(req, resp, time.Second)
 	if err != nil {
 		return Response{
 			Key:   key,
