@@ -6,7 +6,7 @@ import (
 
 const baseURL = "https://discord.com/api/webhooks/"
 
-var fasthttpClient = &fasthttp.Client{}
+var fasthttpClient *fasthttp.Client
 
 type Response struct {
 	Key   string
