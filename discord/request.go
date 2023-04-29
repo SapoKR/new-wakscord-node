@@ -35,6 +35,9 @@ func RequestFastHTTP(key string, data any, retry int) Response {
 		}
 	}
 
+	fasthttp.ReleaseRequest(req)
+	defer fasthttp.ReleaseResponse(resp)
+
 	code := resp.StatusCode()
 	if code == fasthttp.StatusTooManyRequests {
 		retryAfter := fastjson.GetFloat64(resp.Body(), "retry_after")
@@ -46,9 +49,6 @@ func RequestFastHTTP(key string, data any, retry int) Response {
 			return RequestFastHTTP(key, data, retry-1)
 		}
 	}
-
-	fasthttp.ReleaseRequest(req)
-	defer fasthttp.ReleaseResponse(resp)
 
 	return Response{
 		Key:  key,
