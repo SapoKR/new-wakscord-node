@@ -37,7 +37,7 @@ func chunkHandler(keys []string, data any) {
 
 	for _, key := range keys {
 		go func(key string, innerChannel chan discord.Response) {
-			response := discord.RequestFastHTTP(key, data, 3)
+			response := discord.RequestFastHTTP(key, data, 5)
 
 			innerChannel <- response
 		}(key, responseChannel)
