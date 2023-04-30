@@ -22,7 +22,7 @@ var (
 	}
 
 	deletedWebhooks = map[string]struct{}{}
-	tasks           = make(chan task)
+	tasks           = make(chan task, 100)
 
 	startTime = time.Now()
 )
