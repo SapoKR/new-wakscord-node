@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/wakscord/new-wakscord-node/env"
@@ -25,6 +26,8 @@ var (
 	tasks           = make(chan task, 100)
 
 	startTime = time.Now()
+
+	serverKey = fmt.Sprintf("Bearer %s", env.GetString("KEY", "wakscord"))
 )
 
 type nodeStatus struct {
