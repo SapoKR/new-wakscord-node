@@ -2,8 +2,6 @@
 
 > 왁스코드 메세지 정보를 전달하는 웹훅 노드
 
-**개발 중입니다.**
-
 ## 빌드
 
 조건:
@@ -45,7 +43,3 @@ docker run -d -p 8777:3000 \
 -   OWNER : 노드 소유자의 정보
 -   MAX_CONCURRENT : 동시에 전송가능한 웹훅 수
 -   WAIT_CONCURRENT : 웹훅 전송 작업이 끝날때까지 기다리는 시간
-
-## 기여하기
-
-기여 및 개발 지침은 [`CONTRIBUTING.md`](CONTRIBUTING.md)를 참고하세요.(TODO)

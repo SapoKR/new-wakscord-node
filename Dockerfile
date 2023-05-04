@@ -12,6 +12,4 @@ RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /app/app .
 
-ENV KEY HOST PORT ID OWNER MAX_CONCURRENT WAIT_CONCURRENT
-
 ENTRYPOINT [ "./app" ]
