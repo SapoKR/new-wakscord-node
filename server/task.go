@@ -10,7 +10,7 @@ import (
 	"github.com/wakscord/new-wakscord-node/utils"
 )
 
-func addTask(keys []string, data any) {
+func addTask(keys []string, data WebhookParams) {
 	var notDeletedKeys []string
 
 	for _, key := range keys {
