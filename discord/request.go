@@ -26,6 +26,8 @@ func RequestFastHTTP(key string, data any, retry int) Response {
 	req.SetBody(body)
 
 	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseRequest(req)
+	defer fasthttp.ReleaseResponse(resp)
 
 	err := fasthttpClient.Do(req, resp)
 	if err != nil {
@@ -37,9 +39,6 @@ func RequestFastHTTP(key string, data any, retry int) Response {
 			Error: err,
 		}
 	}
-
-	fasthttp.ReleaseRequest(req)
-	defer fasthttp.ReleaseResponse(resp)
 
 	code := resp.StatusCode()
 	if code == fasthttp.StatusTooManyRequests {
