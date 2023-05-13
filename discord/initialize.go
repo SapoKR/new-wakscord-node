@@ -2,12 +2,11 @@ package discord
 
 import (
 	"github.com/valyala/fasthttp"
-	"github.com/wakscord/new-wakscord-node/env"
+	"github.com/wakscord/new-wakscord-node/config"
 )
 
 func Initialize() {
-	maxConns := env.GetInt("MAX_CONCURRENT", 500)
 	fasthttpClient = &fasthttp.Client{
-		MaxConnsPerHost: maxConns,
+		MaxConnsPerHost: config.Default.MaxConcurrent,
 	}
 }

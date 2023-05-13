@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/valyala/fasthttp"
+	"github.com/wakscord/new-wakscord-node/config"
 	"golang.org/x/exp/maps"
 )
 
@@ -17,7 +18,7 @@ func requestHandler(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	if path == "/request" || path == "/deletedWebhooks" {
+	if path == "/request" || path == "/deletedWebhooks" || path == "/environment" {
 		requestKey := string(ctx.Request.Header.Peek("Authorization"))
 		if requestKey == serverKey {
 			switch path {
@@ -25,6 +26,8 @@ func requestHandler(ctx *fasthttp.RequestCtx) {
 				handleRequest(ctx)
 			case "/deletedWebhooks":
 				handleDeletedWebhooks(ctx)
+			case "/environment":
+				handleEnvironment(ctx)
 			}
 		} else {
 			ctx.SetStatusCode(fasthttp.StatusUnauthorized)
@@ -76,4 +79,14 @@ func handleDeletedWebhooks(ctx *fasthttp.RequestCtx) {
 		deletedWebhooks = map[string]struct{}{}
 		ctx.SetStatusCode(fasthttp.StatusNoContent)
 	}
+}
+
+func handleEnvironment(ctx *fasthttp.RequestCtx) {
+	body, err := json.Marshal(config.Default)
+	if err != nil {
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		fmt.Fprintf(ctx, "json marshalling error: %v", err)
+	}
+
+	fmt.Fprint(ctx, string(body))
 }

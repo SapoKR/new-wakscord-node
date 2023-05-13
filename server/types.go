@@ -1,33 +1,18 @@
 package server
 
 import (
-	"fmt"
 	"time"
-
-	"github.com/wakscord/new-wakscord-node/env"
 )
 
 var (
-	status = nodeStatus{
-		Info: nodeInfo{
-			NodeID: env.GetInt("ID", 0),
-			Owner:  env.GetString("OWNER", "Unknown"),
-		},
-		Pending: nodePending{
-			Total:    0,
-			Messages: 0,
-			Tasks:    0,
-		},
-		Processed: 0,
-		Uptime:    0,
-	}
+	status nodeStatus
 
 	deletedWebhooks = map[string]struct{}{}
-	tasks           = make(chan task, 100)
+	tasks           chan task
 
 	startTime = time.Now()
 
-	serverKey = fmt.Sprintf("Bearer %s", env.GetString("KEY", "wakscord"))
+	serverKey string
 )
 
 type nodeStatus struct {

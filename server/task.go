@@ -5,8 +5,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/wakscord/new-wakscord-node/config"
 	"github.com/wakscord/new-wakscord-node/discord"
-	"github.com/wakscord/new-wakscord-node/env"
 	"github.com/wakscord/new-wakscord-node/utils"
 )
 
@@ -19,7 +19,7 @@ func addTask(keys []string, data WebhookParams) {
 		}
 	}
 
-	chunks := utils.ChunkSlice(notDeletedKeys, env.GetInt("MAX_CONCURRENT", 500))
+	chunks := utils.ChunkSlice(notDeletedKeys, config.Default.MaxConcurrent)
 
 	go func() {
 		atomic.AddInt32(&status.Pending.Messages, 1)
@@ -70,7 +70,7 @@ func taskHandler() {
 
 		for _, chunk := range task.chunks {
 			chunkHandler(chunk, task.data)
-			time.Sleep(time.Second * time.Duration(env.GetInt("WAIT_CONCURRENT", 1)))
+			time.Sleep(time.Second * time.Duration(config.Default.WaitConcurrent))
 
 			status.Pending.Tasks--
 			status.Pending.Total--
