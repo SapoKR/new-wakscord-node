@@ -55,6 +55,12 @@ func handleIndex(ctx *fasthttp.RequestCtx) {
 }
 
 func handleRequest(ctx *fasthttp.RequestCtx) {
+	if len(tasks) >= config.Default.MessageQueueSize {
+		ctx.SetStatusCode(fasthttp.StatusNotAcceptable)
+		fmt.Fprint(ctx, "too many tasks")
+		return
+	}
+
 	payload := new(requestPayload)
 	if err := json.Unmarshal(ctx.Request.Body(), payload); err != nil {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
