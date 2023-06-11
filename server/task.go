@@ -5,12 +5,16 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/wakscord/new-wakscord-node/config"
-	"github.com/wakscord/new-wakscord-node/discord"
-	"github.com/wakscord/new-wakscord-node/utils"
+	"github.com/wakscord/node/config"
+	"github.com/wakscord/node/discord"
+	"github.com/wakscord/node/utils"
 )
 
-func addTask(keys []string, data WebhookParams) {
+func addTask(keys []string, data discord.WebhookParams) error {
+	if len(tasks) >= config.Default.MessageQueueSize {
+		return errQueueIsFull
+	}
+
 	var notDeletedKeys []string
 
 	for _, key := range keys {
@@ -21,18 +25,18 @@ func addTask(keys []string, data WebhookParams) {
 
 	chunks := utils.ChunkSlice(notDeletedKeys, config.Default.MaxConcurrent)
 
-	go func() {
-		atomic.AddInt32(&status.Pending.Messages, 1)
-		atomic.AddInt32(&status.Pending.Total, 1)
+	atomic.AddInt32(&status.Pending.Messages, 1)
+	atomic.AddInt32(&status.Pending.Total, 1)
 
-		tasks <- task{
-			chunks: chunks,
-			data:   data,
-		}
-	}()
+	tasks <- task{
+		chunks: chunks,
+		data:   data,
+	}
+
+	return nil
 }
 
-func chunkHandler(keys []string, data any) {
+func chunkHandler(keys []string, data discord.WebhookParams) {
 	var responseChannel = make(chan discord.Response)
 
 	for _, key := range keys {
@@ -46,7 +50,7 @@ func chunkHandler(keys []string, data any) {
 	for range keys {
 		response := <-responseChannel
 		if response.Error != nil {
-			log.Printf("Uncaught error occurred. Error: %v", response.Error)
+			log.Printf("Uncaught error occurred. Error: %v\n", response.Error)
 		}
 		if 401 <= response.Code && response.Code <= 404 {
 			deletedWebhooks[response.Key] = struct{}{}

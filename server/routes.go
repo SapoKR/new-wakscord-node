@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/valyala/fasthttp"
-	"github.com/wakscord/new-wakscord-node/config"
+	"github.com/wakscord/node/config"
 	"golang.org/x/exp/maps"
 )
 
@@ -67,7 +67,11 @@ func handleRequest(ctx *fasthttp.RequestCtx) {
 		fmt.Fprintf(ctx, "body parsing error: %v", err)
 	}
 
-	addTask(payload.Keys, payload.Data)
+	if err := addTask(payload.Keys, payload.Data); err != nil {
+		ctx.SetStatusCode(fasthttp.StatusServiceUnavailable)
+		fmt.Fprint(ctx, err)
+		return
+	}
 
 	fmt.Fprint(ctx, "ok")
 }
