@@ -30,6 +30,7 @@ docker run -d -p 8777:3000 \
     -e "OWNER=yejun#3332" \
     -e "MAX_CONCURRENT=500" \
     -e "WAIT_CONCURRENT=0" \
+    -e "MESSAGE_QUEUE_SIZE=100"
     --name node --restart always \
     minibox24/wakscord-node
 ```
@@ -43,3 +44,4 @@ docker run -d -p 8777:3000 \
 -   OWNER : 노드 소유자의 정보
 -   MAX_CONCURRENT : 동시에 전송가능한 웹훅 수
 -   WAIT_CONCURRENT : 웹훅 전송 작업이 끝날때까지 기다리는 시간
+-   MESSAGE_QUEUE_SIZE: 메시지 전송 대기열의 크기
