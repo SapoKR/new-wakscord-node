@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/valyala/fasthttp"
-	"github.com/wakscord/new-wakscord-node/config"
+	"github.com/wakscord/node/config"
 )
 
 func Run() error {

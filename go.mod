@@ -1,4 +1,4 @@
-module github.com/wakscord/new-wakscord-node
+module github.com/wakscord/node
 
 go 1.20
 

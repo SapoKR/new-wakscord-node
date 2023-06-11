@@ -2,7 +2,7 @@ package discord
 
 import (
 	"github.com/valyala/fasthttp"
-	"github.com/wakscord/new-wakscord-node/config"
+	"github.com/wakscord/node/config"
 )
 
 func Initialize() {

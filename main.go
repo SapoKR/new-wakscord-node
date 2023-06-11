@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/wakscord/new-wakscord-node/config"
-	"github.com/wakscord/new-wakscord-node/discord"
-	"github.com/wakscord/new-wakscord-node/server"
+	"github.com/wakscord/node/config"
+	"github.com/wakscord/node/discord"
+	"github.com/wakscord/node/server"
 )
 
 func main() {
